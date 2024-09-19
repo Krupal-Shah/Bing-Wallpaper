@@ -3,9 +3,12 @@ import datetime
 import os
 import subprocess
 
-def set_wallpaper(file_path):
+def setWallpaper(file_path):
     full_path = os.path.abspath(file_path)
     print(full_path)
+    subprocess.run([
+        "gsettings", "set", "org.gnome.desktop.background", "picture-uri", f"file://{full_path}"
+    ])
     subprocess.run([
         "gsettings", "set", "org.gnome.desktop.background", "picture-uri-dark", f"file://{full_path}"
     ])
@@ -75,7 +78,6 @@ class BingCollection:
             img.descriptionlink = "https://www.bing.com" + image['copyrightlink']
             self.images.append(img)
             count += 1
-            print(img.title, img.description)
         print(f"Extracted {count} images.")
         return
 

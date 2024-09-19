@@ -1,10 +1,10 @@
-from PySide6.QtWidgets import QMainWindow, QLabel, QVBoxLayout, QWidget, QHBoxLayout, QPushButton, QSizePolicy
-from PySide6.QtGui import QIcon, QPixmap, QImage, QFont
+from PySide6.QtWidgets import QMainWindow, QLabel, QVBoxLayout, QWidget, QHBoxLayout, QPushButton, QSizePolicy, QMenu, QCheckBox
+from PySide6.QtGui import QIcon, QPixmap, QImage, QFont, QAction
 from PySide6.QtCore import Qt, QRect, QSize
 import subprocess
 
 # Assume BingImage and BingCollection classes are in the extract module
-from extract import BingCollection, BingImage, set_wallpaper
+from extract import BingCollection, BingImage, setWallpaper
 
 class Window(QMainWindow):
     def __init__(self, parent=None):
@@ -18,31 +18,43 @@ class Window(QMainWindow):
         self.image_height = 100
         self.icon_width = 20
         self.icon_height = 20
-        self.currPicture = 0
+        self.curr_picture = 0
+        self.is_dark_theme = None
 
         # Header
         self.headerLayout =QHBoxLayout()
-        self.icon_label = QLabel(self)
-        self.icon_label.setFixedSize(self.icon_width, self.icon_height)
+        self.iconLabel = QLabel(self)
+        self.iconLabel.setFixedSize(self.icon_width, self.icon_height)
         icon = QImage()
         icon.load('icons/icon.png')
-        self.icon_label.setPixmap(QPixmap.fromImage(icon).scaled(self.icon_width, self.icon_height, Qt.KeepAspectRatioByExpanding))
-        self.icon_label.show()
+        self.iconLabel.setPixmap(QPixmap.fromImage(icon).scaled(self.icon_width, self.icon_height, Qt.KeepAspectRatioByExpanding))
+        self.iconLabel.show()
 
         self.minimizeButton = QPushButton()
-        self.minimizeButton.setIcon(QIcon('icons/minimize_dark'))
+        self.minimizeButton.setIcon(QIcon('icons/minimize_dark.png'))
         self.minimizeButton.setIconSize(QSize(self.icon_width, self.icon_height))
         self.minimizeButton.clicked.connect(self.showMinimized)
 
         self.settingsButton = QPushButton()
-        self.settingsButton.setIcon(QIcon('icons/settings_dark'))
+        self.settingsButton.setIcon(QIcon('icons/settings_dark.png'))
         self.settingsButton.setIconSize(QSize(self.icon_width, self.icon_height))
-        self.settingsButton.clicked.connect(self.showSettings)
+        self.menu = QMenu()
+        # self.menu.addAction(QIcon("icons/theme_dark.png"), "Theme")
+        # ----------------------------
+        self.themeAction = QAction(QIcon("icons/theme_dark.png"), "Theme (Dark)", self.menu)
+        self.themeAction.triggered.connect(self.toggleTheme)
+        self.menu.addAction(self.themeAction)
+        # ----------------------------
+        self.menu.addSeparator()
+        self.menu.addAction("Quit")
+        self.settingsButton.setMenu(self.menu)
+
+        # self.settingsButton.clicked.connect(self.showSettings)
 
         self.headerTitle = QLabel()
         self.headerTitle.setText(" Wallpaper")
         self.headerTitle.setStyleSheet("font-family: Verdana; text-transform: capitalize; color: grey; font-weight: bold; font-size: 14px")
-        self.headerLayout.addWidget(self.icon_label)
+        self.headerLayout.addWidget(self.iconLabel)
         self.headerLayout.addWidget(self.headerTitle)
         self.headerLayout.addStretch()
         self.headerLayout.addWidget(self.minimizeButton)
@@ -119,7 +131,7 @@ class Window(QMainWindow):
             reply = self.collection.download_image(index)
             if reply:
                 img_file_path = f'images/{index}.jpg'
-                set_wallpaper(img_file_path)
+                setWallpaper(img_file_path)
                 img = QImage()
                 img.load(img_file_path)
                 self.image_label.setPixmap(QPixmap.fromImage(img).scaled(self.image_width, self.image_height, Qt.KeepAspectRatioByExpanding))
@@ -132,12 +144,12 @@ class Window(QMainWindow):
         return
 
     def checkButton(self):
-        if self.currPicture >= 7:
+        if self.curr_picture >= 7:
             self.back.setEnabled(False)
         else:
             self.back.setEnabled(True)
 
-        if self.currPicture <= 0:
+        if self.curr_picture <= 0:
             self.next.setEnabled(False)
         else:
             self.next.setEnabled(True)
@@ -145,29 +157,61 @@ class Window(QMainWindow):
         return
 
     def backButtonClicked(self):
-        self.currPicture += 1
-        self.load_image(self.currPicture)
+        self.curr_picture += 1
+        self.load_image(self.curr_picture)
         self.checkButton()
         return
 
     def nextButtonClicked(self):
-        self.currPicture -= 1
-        self.load_image(self.currPicture)
+        self.curr_picture -= 1
+        self.load_image(self.curr_picture)
         self.checkButton()
         return
     
     def showSettings(self):
+
         return
     
     def showMinimized(self):
         return
 
-    def set_wallpaper(self, file_path):
-        subprocess.run([
-            "gsettings", "set", "org.gnome.desktop.background", "picture-uri", f"file://{file_path}"
-        ])
-        return
+    def check_theme(self):
+        output = subprocess.run([
+            "gsettings", "get", "org.gnome.desktop.interface", "gtk-theme"
+        ], stdout=subprocess.PIPE)
+        theme = output.stdout.decode().rstrip()
+        if "dark" in theme:
+            self.is_dark_theme = True
+        else:
+            self.is_dark_theme = False
 
+        return
+    
+    def toggleTheme(self):
+        """Toggle between light and dark theme."""
+        if self.is_dark_theme:
+            # Switch to light theme
+            self.setLightTheme()
+            self.themeAction.setText("Theme (Light)")
+            self.themeAction.setIcon(QIcon("icons/theme_light.png"))
+        else:
+            # Switch to dark theme
+            self.setDarkTheme()
+            self.themeAction.setText("Theme (Dark)")
+            self.themeAction.setIcon(QIcon("icons/theme_dark.png"))
+
+        # Toggle the theme state
+        self.is_dark_theme = not self.is_dark_theme
+
+    def setLightTheme(self):
+        """Apply the light theme to the application."""
+
+        self.settingsButton.setIcon(QIcon('icons/settings_light.png'))
+
+    def setDarkTheme(self):
+        """Apply the dark theme to the application."""
+
+        self.settingsButton.setIcon(QIcon('icons/settings_dark.png'))
 
 
 
