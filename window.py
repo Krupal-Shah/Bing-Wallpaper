@@ -1,6 +1,6 @@
-from PySide6.QtWidgets import QMainWindow, QLabel, QVBoxLayout, QWidget, QHBoxLayout, QPushButton, QSizePolicy, QMenu, QCheckBox
-from PySide6.QtGui import QIcon, QPixmap, QImage, QFont, QAction
-from PySide6.QtCore import Qt, QRect, QSize
+from PySide6.QtWidgets import QMainWindow, QLabel, QVBoxLayout, QWidget, QHBoxLayout, QPushButton, QSizePolicy, QMenu, QCheckBox, QMessageBox, QApplication, QSystemTrayIcon
+from PySide6.QtGui import QIcon, QPixmap, QImage, QFont, QAction, QColor
+from PySide6.QtCore import Qt, QRect, QSize, Slot
 import subprocess
 
 # Assume BingImage and BingCollection classes are in the extract module
@@ -9,11 +9,27 @@ from extract import BingCollection, BingImage, setWallpaper
 class Window(QMainWindow):
     def __init__(self, parent=None):
         super().__init__(parent)
+        # Setup Window
         self.setWindowFlags(Qt.FramelessWindowHint)
         self.setWindowTitle('Wallpaper')
-        self.setWindowIcon(QIcon(':/icon.ico'))
+        self.setWindowIcon(QIcon('icons/icon.png'))
         self.setFixedSize(350, 200)
+        
+        # Setup TrayIcon
+        self.trayIcon = QSystemTrayIcon()
+        self.trayIcon.setIcon(QIcon('icons/icon.png'))
+        self.trayIcon.setToolTip('Wallpaper')
+        self.trayIcon.setVisible(True)
 
+        self.menu = QMenu()
+        self.quit_action = QAction("Quit", self)
+        self.quit_action.triggered.connect(self.quitApplication)
+        self.menu.addAction(self.quit_action)
+        self.trayIcon.setContextMenu(self.menu)
+        self.trayIcon.activated.connect(self.on_tray_icon_activated)
+        self.trayIcon.show()
+
+        # Initialize variables
         self.image_width = 100
         self.image_height = 100
         self.icon_width = 20
@@ -31,34 +47,37 @@ class Window(QMainWindow):
         self.iconLabel.show()
 
         self.minimizeButton = QPushButton()
-        self.minimizeButton.setIcon(QIcon('icons/minimize_dark.png'))
         self.minimizeButton.setIconSize(QSize(self.icon_width, self.icon_height))
-        self.minimizeButton.clicked.connect(self.showMinimized)
+        self.minimizeButton.clicked.connect(self.minimizeApplication)
 
-        self.settingsButton = QPushButton()
-        self.settingsButton.setIcon(QIcon('icons/settings_dark.png'))
-        self.settingsButton.setIconSize(QSize(self.icon_width, self.icon_height))
-        self.menu = QMenu()
+        self.closeButton = QPushButton()
+        self.closeButton.setIconSize(QSize(self.icon_width, self.icon_height))
+        self.closeButton.clicked.connect(self.quitApplication)
+
+        # self.settingsButton = QPushButton()
+        # self.settingsButton.setIcon(QIcon('icons/settings_dark.png'))
+        # self.settingsButton.setIconSize(QSize(self.icon_width, self.icon_height))
+        # self.menu = QMenu()
         # self.menu.addAction(QIcon("icons/theme_dark.png"), "Theme")
         # ----------------------------
-        self.themeAction = QAction(QIcon("icons/theme_dark.png"), "Theme (Dark)", self.menu)
-        self.themeAction.triggered.connect(self.toggleTheme)
-        self.menu.addAction(self.themeAction)
+        # self.themeAction = QAction(QIcon("icons/theme_dark.png"), "Theme (Dark)", self.menu)
+        # self.themeAction.triggered.connect(self.toggleTheme)
+        # self.menu.addAction(self.themeAction)
         # ----------------------------
-        self.menu.addSeparator()
-        self.menu.addAction("Quit")
-        self.settingsButton.setMenu(self.menu)
+        # self.menu.addSeparator()
+        # self.menu.addAction("Quit")
+        # self.settingsButton.setMenu(self.menu)
 
         # self.settingsButton.clicked.connect(self.showSettings)
 
         self.headerTitle = QLabel()
         self.headerTitle.setText(" Wallpaper")
-        self.headerTitle.setStyleSheet("font-family: Verdana; text-transform: capitalize; color: grey; font-weight: bold; font-size: 14px")
+        self.headerTitle.setStyleSheet("font-family: Verdana; text-transform: capitalize; font-weight: bold; font-size: 14px")
         self.headerLayout.addWidget(self.iconLabel)
         self.headerLayout.addWidget(self.headerTitle)
         self.headerLayout.addStretch()
         self.headerLayout.addWidget(self.minimizeButton)
-        self.headerLayout.addWidget(self.settingsButton)
+        self.headerLayout.addWidget(self.closeButton)
 
         # Content
         self.title = QLabel(self)
@@ -118,9 +137,23 @@ class Window(QMainWindow):
         self.central_widget = QWidget()
         self.central_widget.setLayout(self.mainlayout)
         self.setCentralWidget(self.central_widget)
+        
+        # Check theme
+        self.checkTheme()
+        self.setTheme()
 
+        # Initialize the BingCollection object
         self.collection = BingCollection()
         self.load_image()
+
+    @Slot(QSystemTrayIcon.ActivationReason)
+    def on_tray_icon_activated(self, reason):
+        """Handle the tray icon clicks and prevent window from opening."""
+        if reason == QSystemTrayIcon.Trigger:  # Left-click
+            print("Tray icon clicked, but window won't open.")
+            # Prevent window from opening
+            return
+
 
     def load_image(self, index=0):
         # Fetch the Bing data
@@ -168,50 +201,70 @@ class Window(QMainWindow):
         self.checkButton()
         return
     
-    def showSettings(self):
+    def quitApplication(self):
+        reply = QMessageBox.question(self, 'Confirmation',
+                                     "Are you sure you want to quit?",
+                                     QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
 
-        return
+        if reply == QMessageBox.Yes:
+            # Force quit the application
+            QApplication.quit()
     
-    def showMinimized(self):
+    def minimizeApplication(self):
+        self.close()
         return
 
-    def check_theme(self):
-        output = subprocess.run([
-            "gsettings", "get", "org.gnome.desktop.interface", "gtk-theme"
-        ], stdout=subprocess.PIPE)
-        theme = output.stdout.decode().rstrip()
-        if "dark" in theme:
-            self.is_dark_theme = True
-        else:
+    def checkTheme(self):
+        # output = subprocess.run([
+        #     "gsettings", "get", "org.gnome.desktop.interface", "gtk-theme"
+        # ], stdout=subprocess.PIPE)
+        # theme = output.stdout.decode().rstrip()
+        # if "dark" in theme:
+        #     self.is_dark_theme = True
+        # else:
+        #     self.is_dark_theme = False
+
+        palette = self.palette()
+        bgcolor = palette.color(self.backgroundRole())
+        print(bgcolor.name())
+        if bgcolor.name() > "#656565":
             self.is_dark_theme = False
-
+        else:
+            self.is_dark_theme = True
         return
     
-    def toggleTheme(self):
-        """Toggle between light and dark theme."""
+    def setTheme(self):
+        """Set light or dark theme."""
         if self.is_dark_theme:
             # Switch to light theme
-            self.setLightTheme()
-            self.themeAction.setText("Theme (Light)")
-            self.themeAction.setIcon(QIcon("icons/theme_light.png"))
+            # self.setLightTheme()
+            # self.themeAction.setText("Theme (Light)")
+            # self.themeAction.setIcon(QIcon("icons/theme_light.png"))
+            # self.quit_action.setIcon(QIcon('icons/close_dark.png'))
+            self.minimizeButton.setIcon(QIcon('icons/minimize_dark.png'))
+            self.closeButton.setIcon(QIcon('icons/close_dark.png'))
         else:
             # Switch to dark theme
-            self.setDarkTheme()
-            self.themeAction.setText("Theme (Dark)")
-            self.themeAction.setIcon(QIcon("icons/theme_dark.png"))
+            # self.setDarkTheme()
+            # self.themeAction.setText("Theme (Dark)")
+            # self.themeAction.setIcon(QIcon("icons/theme_dark.png"))
+            # self.quit_action.setIcon(QIcon('icons/close_light.png'))
+            self.minimizeButton.setIcon(QIcon('icons/minimize_light.png'))
+            self.closeButton.setIcon(QIcon('icons/close_light.png'))
 
         # Toggle the theme state
-        self.is_dark_theme = not self.is_dark_theme
+        # self.is_dark_theme = not self.is_dark_theme
 
-    def setLightTheme(self):
-        """Apply the light theme to the application."""
+    # def setLightTheme(self):
+    #     """Apply the light theme to the application."""
 
-        self.settingsButton.setIcon(QIcon('icons/settings_light.png'))
+    #     self.settingsButton.setIcon(QIcon('icons/settings_light.png'))
 
-    def setDarkTheme(self):
-        """Apply the dark theme to the application."""
+    # def setDarkTheme(self):
+    #     """Apply the dark theme to the application."""
 
-        self.settingsButton.setIcon(QIcon('icons/settings_dark.png'))
+    #     self.settingsButton.setIcon(QIcon('icons/settings_dark.png'))
+
 
 
 

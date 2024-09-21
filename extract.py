@@ -4,14 +4,13 @@ import os
 import subprocess
 
 def setWallpaper(file_path):
-    full_path = os.path.abspath(file_path)
-    print(full_path)
+    full_path = os.path.abspath(file_path)   
     subprocess.run([
         "gsettings", "set", "org.gnome.desktop.background", "picture-uri", f"file://{full_path}"
-    ])
+    ], stdout=subprocess.PIPE)    
     subprocess.run([
         "gsettings", "set", "org.gnome.desktop.background", "picture-uri-dark", f"file://{full_path}"
-    ])
+    ], stdout=subprocess.PIPE)
     return
 
 class BingImage:
@@ -49,7 +48,6 @@ class BingCollection:
     def __init__(self):
         self.data = None
         self.images = []
-        self.curr_image = 0
         self.api_endpoint = "https://www.bing.com/HPImageArchive.aspx?format=js&idx=0&n=10&mkt=en-US"
 
     def request_data(self):
@@ -123,4 +121,5 @@ if __name__ == "__main__":
     collection.request_data()
     collection.extract_images()
     collection.download_image(0)
-    collection.delete_image(0)
+    # setWallpaper('images/0.jpg')
+    # collection.delete_image(0)
