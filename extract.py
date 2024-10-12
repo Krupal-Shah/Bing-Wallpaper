@@ -3,15 +3,35 @@ import datetime
 import os
 import subprocess
 
-def setWallpaper(file_path):
-    full_path = os.path.abspath(file_path)   
-    subprocess.run([
-        "gsettings", "set", "org.gnome.desktop.background", "picture-uri", f"file://{full_path}"
-    ], stdout=subprocess.PIPE)    
-    subprocess.run([
-        "gsettings", "set", "org.gnome.desktop.background", "picture-uri-dark", f"file://{full_path}"
-    ], stdout=subprocess.PIPE)
-    return
+PATH = '//usr/share/Bing-Wallpaper/images'
+
+def setWallpaper(filename):
+    full_path = os.path.join(f'file:/{PATH}', filename)
+    print(full_path)
+
+    getCurrentImageDetailsLight = subprocess.run([
+        "gsettings", "get", "org.gnome.desktop.background", "picture-uri"
+    ], stdout=subprocess.PIPE, check=True)
+
+    getCurrentImageDetailsDark = subprocess.run([
+        "gsettings", "get", "org.gnome.desktop.background", "picture-uri-dark"
+    ], stdout=subprocess.PIPE, check=True)
+
+    output1 = getCurrentImageDetailsLight.stdout.decode().strip()
+    output2 = getCurrentImageDetailsDark.stdout.decode().strip()
+    print(output1, output2)
+
+    # if getCurrentImageDetailsLight.stdout.decode().strip() != full_path:
+    #     subprocess.run([
+    #         "gsettings", "set", "org.gnome.desktop.background", "picture-uri", full_path
+    #     ], stdout=subprocess.PIPE)
+
+    # if getCurrentImageDetailsDark.stdout.decode().strip() != full_path:
+    #     subprocess.run([
+    #         "gsettings", "set", "org.gnome.desktop.background", "picture-uri-dark", full_path
+    #     ], stdout=subprocess.PIPE)
+
+    # return f"{output1} \n {output2} \n {full_path}"
 
 class BingImage:
     def __init__(self):
@@ -27,11 +47,11 @@ class BingImage:
         try:
             response = requests.get(self.imageurl)
             response.raise_for_status()  # Raise an exception for HTTP errors
-            if not os.path.exists('images'):
-                os.makedirs('images')
-            with open(f'images/{self.index}.jpg', 'wb') as file:
+            if not os.path.exists(PATH):
+                os.makedirs(PATH)
+            with open(f'{PATH}/{self.index}-{self.startdate}-{self.enddate}.jpg', 'wb') as file:
                 file.write(response.content)
-            print(f"Image {self.index} downloaded successfully.")
+            print(f"Image {self.index}-{self.startdate}-{self.enddate} downloaded successfully.")
         except Exception as e:
             print(f"Failed to download image {self.index}: {e}")
 
@@ -85,41 +105,25 @@ class BingCollection:
             self.extract_images()
 
         # Images file is not empty.
-        if not os.path.exists('images'):
-            os.makedirs('images')
-        image_path = f'images/{index}.jpg'
-        if os.path.exists(image_path):
-            self.delete_image(index)
+        if not os.path.exists(PATH):
+            os.makedirs(PATH)
+        
+        file_count = len([f for f in os.listdir(PATH) if os.path.isfile(os.path.join(PATH, f))])
+        if file_count > 10:
+            self.delete_all_image()
 
         # Downloading images
-
         self.images[index].get_img()
-        return 1
 
-    def delete_image(self, index):
-        if not os.path.exists('images'):
-            print("No images directory to delete from.")
-            return 1
-
-        try:
-            image = self.images[index]
-            image_path = f'images/{image.index}.jpg'
-            if os.path.exists(image_path):
-                os.remove(image_path)
-                print(f"Image {image.index} deleted.")
-            else:
-                print(f"Image {image.index} not found.")
-        except Exception as e:
-            print(f"Failed to delete image {image.index}: {e}")
-            return 1
-
-        return
-
+    def delete_all_image(self):
+        for f in os.listdir(PATH):
+            os.remove(os.path.join(PATH, f))
+    
 # Test Script:
 if __name__ == "__main__":
     collection = BingCollection()
     collection.request_data()
     collection.extract_images()
     collection.download_image(0)
-    # setWallpaper('images/0.jpg')
+    setWallpaper('0-2024-10-09-2024-10-10.jpg')
     # collection.delete_image(0)

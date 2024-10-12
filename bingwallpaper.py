@@ -1,3 +1,4 @@
+#!/env/bin/python3
 import sys
 from PySide6.QtWidgets import QApplication, QMessageBox, QSystemTrayIcon
 
@@ -13,5 +14,5 @@ if __name__ == "__main__":
     QApplication.setQuitOnLastWindowClosed(False)
 
     window = Window()
-    window.show()
+    window.hide()
     sys.exit(app.exec())

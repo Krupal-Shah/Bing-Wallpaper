@@ -1,0 +1,12 @@
+{
+    "files": [
+        "extract.py",
+        "icons/close_dark.png",
+        "icons/close_light.png",
+        "icons/icon.png",
+        "icons/refresh_dark.png",
+        "icons/refresh_light.png",
+        "bingwallpaper.py",
+        "window.py"
+    ]
+}
