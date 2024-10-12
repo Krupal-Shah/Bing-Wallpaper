@@ -1,0 +1,5 @@
+Package: Bing Wallpaper for Linux
+Version: 0.0.1
+Architecture: all
+Maintainer: Krupal Shah
+Description: A simple background app that will change your wallpaper like that of Bing wallpaper for Linux.

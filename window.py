@@ -1,24 +1,26 @@
-from PySide6.QtWidgets import QMainWindow, QLabel, QVBoxLayout, QWidget, QHBoxLayout, QPushButton, QSizePolicy, QMenu, QCheckBox, QMessageBox, QApplication, QSystemTrayIcon
-from PySide6.QtGui import QIcon, QPixmap, QImage, QFont, QAction, QColor
-from PySide6.QtCore import Qt, QRect, QSize, Slot
-import subprocess
+from PySide6.QtWidgets import *
+from PySide6.QtGui import *
+from PySide6.QtCore import *
 
 # Assume BingImage and BingCollection classes are in the extract module
 from extract import BingCollection, BingImage, setWallpaper
+
+PATH = '//usr/share/Bing-Wallpaper/'
 
 class Window(QMainWindow):
     def __init__(self, parent=None):
         super().__init__(parent)
         # Setup Window
-        self.setWindowFlags(Qt.FramelessWindowHint)
-        self.setWindowTitle('Wallpaper')
-        self.setWindowIcon(QIcon('icons/icon.png'))
-        self.setFixedSize(350, 200)
-        
+        self.setWindowFlags(Qt.FramelessWindowHint | Qt.Tool)
+        self.setWindowTitle('Bing Wallpaper')
+        self.setWindowIcon(QIcon('{PATH}/icons/icon.png'))
+        self.setFixedSize(350, 220)
+        self.setAttribute(Qt.WA_TranslucentBackground)
+
         # Setup TrayIcon
         self.trayIcon = QSystemTrayIcon()
-        self.trayIcon.setIcon(QIcon('icons/icon.png'))
-        self.trayIcon.setToolTip('Wallpaper')
+        self.trayIcon.setIcon(QIcon('{PATH}/icons/icon.png'))
+        self.trayIcon.setToolTip('Bing Wallpaper')
         self.trayIcon.setVisible(True)
 
         self.menu = QMenu()
@@ -35,48 +37,31 @@ class Window(QMainWindow):
         self.icon_width = 20
         self.icon_height = 20
         self.curr_picture = 0
-        self.is_dark_theme = None
 
         # Header
         self.headerLayout =QHBoxLayout()
         self.iconLabel = QLabel(self)
         self.iconLabel.setFixedSize(self.icon_width, self.icon_height)
         icon = QImage()
-        icon.load('icons/icon.png')
+        icon.load(f'{PATH}/icons/icon.png')
         self.iconLabel.setPixmap(QPixmap.fromImage(icon).scaled(self.icon_width, self.icon_height, Qt.KeepAspectRatioByExpanding))
         self.iconLabel.show()
 
-        self.minimizeButton = QPushButton()
-        self.minimizeButton.setIconSize(QSize(self.icon_width, self.icon_height))
-        self.minimizeButton.clicked.connect(self.minimizeApplication)
+        self.refreshButton = QPushButton()
+        self.refreshButton.setIconSize(QSize(self.icon_width, self.icon_height))
+        self.refreshButton.clicked.connect(self.refreshApplication)
 
         self.closeButton = QPushButton()
         self.closeButton.setIconSize(QSize(self.icon_width, self.icon_height))
-        self.closeButton.clicked.connect(self.quitApplication)
-
-        # self.settingsButton = QPushButton()
-        # self.settingsButton.setIcon(QIcon('icons/settings_dark.png'))
-        # self.settingsButton.setIconSize(QSize(self.icon_width, self.icon_height))
-        # self.menu = QMenu()
-        # self.menu.addAction(QIcon("icons/theme_dark.png"), "Theme")
-        # ----------------------------
-        # self.themeAction = QAction(QIcon("icons/theme_dark.png"), "Theme (Dark)", self.menu)
-        # self.themeAction.triggered.connect(self.toggleTheme)
-        # self.menu.addAction(self.themeAction)
-        # ----------------------------
-        # self.menu.addSeparator()
-        # self.menu.addAction("Quit")
-        # self.settingsButton.setMenu(self.menu)
-
-        # self.settingsButton.clicked.connect(self.showSettings)
+        self.closeButton.clicked.connect(self.minimizeApplication)
 
         self.headerTitle = QLabel()
-        self.headerTitle.setText(" Wallpaper")
+        self.headerTitle.setText("Wallpaper")
         self.headerTitle.setStyleSheet("font-family: Verdana; text-transform: capitalize; font-weight: bold; font-size: 14px")
         self.headerLayout.addWidget(self.iconLabel)
         self.headerLayout.addWidget(self.headerTitle)
         self.headerLayout.addStretch()
-        self.headerLayout.addWidget(self.minimizeButton)
+        self.headerLayout.addWidget(self.refreshButton)
         self.headerLayout.addWidget(self.closeButton)
 
         # Content
@@ -93,14 +78,11 @@ class Window(QMainWindow):
         self.textlayout = QVBoxLayout()
         self.textlayout.addWidget(self.title)
         self.textlayout.addWidget(self.description)
-        # self.textlayout.setAlignment(Qt.AlignTop)
-        self.textlayout.setContentsMargins(12, 7, 0, 0)
+        self.textlayout.setContentsMargins(12, 10, 0, 0)
         self.textlayout.addStretch()
 
         self.image_label = QLabel(self)
         self.image_label.setFixedSize(self.image_width, self.image_height)
-        # self.image_label.setStyleSheet("border-radius: 10px;")
-
         self.contentlayout = QHBoxLayout()
         self.contentlayout.addWidget(self.image_label)
         self.contentlayout.addLayout(self.textlayout)
@@ -137,23 +119,55 @@ class Window(QMainWindow):
         self.central_widget = QWidget()
         self.central_widget.setLayout(self.mainlayout)
         self.setCentralWidget(self.central_widget)
-        
-        # Check theme
-        self.checkTheme()
-        self.setTheme()
+
+        #Set icons initially
+        self.setButtonIcons()
 
         # Initialize the BingCollection object
         self.collection = BingCollection()
         self.load_image()
 
-    @Slot(QSystemTrayIcon.ActivationReason)
-    def on_tray_icon_activated(self, reason):
-        """Handle the tray icon clicks and prevent window from opening."""
-        if reason == QSystemTrayIcon.Trigger:  # Left-click
-            print("Tray icon clicked, but window won't open.")
-            # Prevent window from opening
-            return
+    def setButtonIcons(self):
+        """ Set button icons based on the current background color. """
+        palette = self.palette()
+        bgcolor = palette.color(self.backgroundRole())
+        if bgcolor.name() > "#656565":
+            self.refreshButton.setIcon(QIcon('icons/refresh_light.png'))
+            self.closeButton.setIcon(QIcon('icons/close_light.png'))
+        else:
+            self.refreshButton.setIcon(QIcon('icons/refresh_dark.png'))
+            self.closeButton.setIcon(QIcon('icons/close_dark.png'))
 
+    def paintEvent(self, event):
+        # Initialize QPainter
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.Antialiasing)
+
+        # Set brush to fill background with the current background color
+        palette = self.palette()
+        bgcolor = palette.color(self.backgroundRole())
+        brush = QBrush(QColor(bgcolor))  # Current background color
+        painter.setBrush(brush)
+
+        # Remove pen to avoid white border line (Qt.NoPen)
+        painter.setPen(Qt.NoPen)
+
+        # Draw the rounded rectangle
+        painter.drawRoundedRect(self.rect(), 15.0, 15.0)
+
+        # Adjust button icons based on background color
+        self.setButtonIcons()
+
+    def event(self, event):
+        """ Listen for palette change events to trigger repaint. """
+        if event.type() == QEvent.PaletteChange:
+            self.update()  # Trigger paintEvent to update the icons
+        return super().event(event)
+
+    @Slot(QSystemTrayIcon.ActivationReason)
+    def on_tray_icon_activated(self):
+        """Handle the tray icon clicks and prevent window from opening."""
+        self.show()
 
     def load_image(self, index=0):
         # Fetch the Bing data
@@ -163,10 +177,12 @@ class Window(QMainWindow):
         if self.collection.images:
             reply = self.collection.download_image(index)
             if reply:
-                img_file_path = f'images/{index}.jpg'
-                setWallpaper(img_file_path)
+                image = self.collection.images[index]
+                filename = f'{image.index}-{image.startdate}-{image.enddate}.jpg'
+                reply = setWallpaper(filename)
+                print(reply)
                 img = QImage()
-                img.load(img_file_path)
+                img.load(f'{PATH}/images/{filename}')
                 self.image_label.setPixmap(QPixmap.fromImage(img).scaled(self.image_width, self.image_height, Qt.KeepAspectRatioByExpanding))
                 self.image_label.show()
                 self.title.setText(self.collection.images[index].title.upper())
@@ -213,58 +229,7 @@ class Window(QMainWindow):
     def minimizeApplication(self):
         self.close()
         return
-
-    def checkTheme(self):
-        # output = subprocess.run([
-        #     "gsettings", "get", "org.gnome.desktop.interface", "gtk-theme"
-        # ], stdout=subprocess.PIPE)
-        # theme = output.stdout.decode().rstrip()
-        # if "dark" in theme:
-        #     self.is_dark_theme = True
-        # else:
-        #     self.is_dark_theme = False
-
-        palette = self.palette()
-        bgcolor = palette.color(self.backgroundRole())
-        print(bgcolor.name())
-        if bgcolor.name() > "#656565":
-            self.is_dark_theme = False
-        else:
-            self.is_dark_theme = True
-        return
     
-    def setTheme(self):
-        """Set light or dark theme."""
-        if self.is_dark_theme:
-            # Switch to light theme
-            # self.setLightTheme()
-            # self.themeAction.setText("Theme (Light)")
-            # self.themeAction.setIcon(QIcon("icons/theme_light.png"))
-            # self.quit_action.setIcon(QIcon('icons/close_dark.png'))
-            self.minimizeButton.setIcon(QIcon('icons/minimize_dark.png'))
-            self.closeButton.setIcon(QIcon('icons/close_dark.png'))
-        else:
-            # Switch to dark theme
-            # self.setDarkTheme()
-            # self.themeAction.setText("Theme (Dark)")
-            # self.themeAction.setIcon(QIcon("icons/theme_dark.png"))
-            # self.quit_action.setIcon(QIcon('icons/close_light.png'))
-            self.minimizeButton.setIcon(QIcon('icons/minimize_light.png'))
-            self.closeButton.setIcon(QIcon('icons/close_light.png'))
-
-        # Toggle the theme state
-        # self.is_dark_theme = not self.is_dark_theme
-
-    # def setLightTheme(self):
-    #     """Apply the light theme to the application."""
-
-    #     self.settingsButton.setIcon(QIcon('icons/settings_light.png'))
-
-    # def setDarkTheme(self):
-    #     """Apply the dark theme to the application."""
-
-    #     self.settingsButton.setIcon(QIcon('icons/settings_dark.png'))
-
-
-
-
+    def refreshApplication(self):
+        self.collection = BingCollection()
+        self.load_image()
