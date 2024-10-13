@@ -1,0 +1,24 @@
+# Byte-compiled files
+__pycache__/
+*.py[cod]
+
+# Virtual environments
+/venv/
+
+# Environment-specific files
+.env
+
+# Logs, temp files, and other unwanted output
+*.log
+*.tmp
+*.swp
+
+# OS-specific files
+.DS_Store   # macOS
+Thumbs.db   # Windows
+
+# Package directories
+/dist/
+/build/
+/releases/*
+
