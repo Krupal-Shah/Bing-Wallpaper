@@ -129,6 +129,10 @@ class Window(QMainWindow):
         self.collection = BingCollection()
         self.load_image()
 
+        self.timer = QTimer(self)
+        self.timer.timeout.connect(self.refreshApplication)
+        self.timer.start(43200000)
+
     def setButtonIcons(self):
         """ Set button icons based on the current background color. """
         palette = self.palette()
