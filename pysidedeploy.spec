@@ -14,7 +14,7 @@ android_packages =
 [qt]
 qml_files = 
 excluded_qml_plugins = 
-modules = Widgets,DBus,Gui,Core
+modules = Gui,Core,Widgets,DBus
 plugins = styles,platforms/darwin,iconengines,egldeviceintegrations,accessiblebridge,imageformats,platformthemes,platforminputcontexts,generic,xcbglintegrations,platforms
 
 [android]
