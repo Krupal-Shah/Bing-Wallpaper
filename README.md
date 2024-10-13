@@ -1,6 +1,6 @@
 <div align="center">
   <a href="[Github](https://github.com/Krupal-Shah/Bing-Wallpaper)">
-    <img src="icons/icon.png" alt="Logo" width="80" height="80">
+    <img src="icons/icon_big.png" alt="Logo" width="80" height="80">
   </a>
 
   <h1 align="center">Bing Wallpaper for Linux</h1>
