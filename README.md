@@ -1,5 +1,11 @@
-<h1 align="center">Bing Wallpaper for Linux</h1>
-<br />
+<div align="center">
+  <a href="[Github](https://github.com/Krupal-Shah/Bing-Wallpaper)">
+    <img src="icons/icon.png" alt="Logo" width="80" height="80">
+  </a>
+
+  <h1 align="center">Bing Wallpaper for Linux</h1>
+</div>
+
 
 ## About
 This is a MOD of the Bing wallpaper created for Windows by Microsoft. It is made using QT for Python. It has similar functionalities, such as updating wallpaper everyday, opening a window to display information about the picture and the ability to change the picture to next or previous picture of the day. 
