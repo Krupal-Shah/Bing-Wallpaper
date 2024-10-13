@@ -1,4 +1,0 @@
-Error while running the code:
-/snap/core20/current/lib/x86_64-linux-gnu/libstdc++.so.6: version `GLIBCXX_3.4.29' not found (required by /lib/x86_64-linux-gnu/libproxy.so.1)
-Dont use VSCode
-https://stackoverflow.com/questions/65349875/where-can-i-find-glibcxx-3-4-29
