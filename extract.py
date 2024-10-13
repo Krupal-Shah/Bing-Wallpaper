@@ -3,35 +3,64 @@ import datetime
 import os
 import subprocess
 
-PATH = '//usr/share/Bing-Wallpaper/images'
+ICONPATH = '//usr/share/bingwallpaper/icons/'
+PATH = os.path.join(os.getenv('HOME'), '.cache', 'bingwallpaper')
 
-def setWallpaper(filename):
-    full_path = os.path.join(f'file:/{PATH}', filename)
-    print(full_path)
+def set_wallpaper(filename):
+    full_path = os.path.join(f'file://{PATH}', filename)
+    print(f"Setting wallpaper: {full_path}")
+    
+    # Detect the desktop session and session type
+    desktop_session = os.getenv("DESKTOP_SESSION", "").lower()
+    xdg_session_type = os.getenv("XDG_SESSION_TYPE", "").lower()
 
-    getCurrentImageDetailsLight = subprocess.run([
-        "gsettings", "get", "org.gnome.desktop.background", "picture-uri"
-    ], stdout=subprocess.PIPE, check=True)
+    # Define setter functions for KDE, Cinnamon, and GNOME
+    def set_kde():
+        script = f"""
+        qdbus org.kde.plasmashell /PlasmaShell org.kde.PlasmaShell.evaluateScript "
+            var allDesktops = desktops();
+            for (i=0;i<allDesktops.length;i++) {{
+                d = allDesktops[i];
+                d.wallpaperPlugin = 'org.kde.image';
+                d.currentConfigGroup = Array('Wallpaper', 'org.kde.image', 'General');
+                d.writeConfig('Image', '{full_path}');
+            }}"
+        """
+        subprocess.run(script, shell=True, check=True)
 
-    getCurrentImageDetailsDark = subprocess.run([
-        "gsettings", "get", "org.gnome.desktop.background", "picture-uri-dark"
-    ], stdout=subprocess.PIPE, check=True)
+    def set_cinnamon():
+        subprocess.run(["gsettings", "set", "org.cinnamon.desktop.background", "picture-uri", full_path], check=True)
 
-    output1 = getCurrentImageDetailsLight.stdout.decode().strip()
-    output2 = getCurrentImageDetailsDark.stdout.decode().strip()
-    print(output1, output2)
+    def set_gnome():
+        getCurrentImageDetailsLight = subprocess.run([
+            "gsettings", "get", "org.gnome.desktop.background", "picture-uri"
+        ], stdout=subprocess.PIPE, check=True)
 
-    # if getCurrentImageDetailsLight.stdout.decode().strip() != full_path:
-    #     subprocess.run([
-    #         "gsettings", "set", "org.gnome.desktop.background", "picture-uri", full_path
-    #     ], stdout=subprocess.PIPE)
+        getCurrentImageDetailsDark = subprocess.run([
+            "gsettings", "get", "org.gnome.desktop.background", "picture-uri-dark"
+        ], stdout=subprocess.PIPE, check=True)
 
-    # if getCurrentImageDetailsDark.stdout.decode().strip() != full_path:
-    #     subprocess.run([
-    #         "gsettings", "set", "org.gnome.desktop.background", "picture-uri-dark", full_path
-    #     ], stdout=subprocess.PIPE)
+        if getCurrentImageDetailsLight.stdout.decode().strip() != full_path:
+            subprocess.run([
+                "gsettings", "set", "org.gnome.desktop.background", "picture-uri", full_path
+            ], stdout=subprocess.PIPE)
 
-    # return f"{output1} \n {output2} \n {full_path}"
+        if getCurrentImageDetailsDark.stdout.decode().strip() != full_path:
+            subprocess.run([
+                "gsettings", "set", "org.gnome.desktop.background", "picture-uri-dark", full_path
+            ], stdout=subprocess.PIPE)
+
+    # Set the wallpaper based on the desktop environment
+    if desktop_session in ["mate", "xfce"]:
+        print(f"{desktop_session.capitalize()} desktop detected, you may need a specific handler.")
+    elif desktop_session in ["cinnamon"]:
+        set_cinnamon()
+    elif desktop_session in ["plasma", "kde"]:
+        set_kde()
+    elif desktop_session in ["gnome", "ubuntu", "deepin", "zorin", "pop", "budgie"]:
+        set_gnome()
+    else:
+        print("Unsupported session type")
 
 class BingImage:
     def __init__(self):
@@ -114,10 +143,13 @@ class BingCollection:
 
         # Downloading images
         self.images[index].get_img()
+        return 1
 
     def delete_all_image(self):
         for f in os.listdir(PATH):
             os.remove(os.path.join(PATH, f))
+        
+        return 1
     
 # Test Script:
 if __name__ == "__main__":
@@ -125,5 +157,5 @@ if __name__ == "__main__":
     collection.request_data()
     collection.extract_images()
     collection.download_image(0)
-    setWallpaper('0-2024-10-09-2024-10-10.jpg')
+    set_wallpaper('0-2024-10-12-2024-10-13.jpg')
     # collection.delete_image(0)

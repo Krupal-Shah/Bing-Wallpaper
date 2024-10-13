@@ -1,11 +1,13 @@
+import os
 from PySide6.QtWidgets import *
 from PySide6.QtGui import *
 from PySide6.QtCore import *
 
 # Assume BingImage and BingCollection classes are in the extract module
-from extract import BingCollection, BingImage, setWallpaper
+from extract import BingCollection, BingImage, set_wallpaper
 
-PATH = '//usr/share/Bing-Wallpaper/'
+ICONPATH = '//usr/share/bingwallpaper/icons/'
+PATH = os.path.join(os.getenv('HOME'), '.cache', 'bingwallpaper')
 
 class Window(QMainWindow):
     def __init__(self, parent=None):
@@ -13,13 +15,13 @@ class Window(QMainWindow):
         # Setup Window
         self.setWindowFlags(Qt.FramelessWindowHint | Qt.Tool)
         self.setWindowTitle('Bing Wallpaper')
-        self.setWindowIcon(QIcon('{PATH}/icons/icon.png'))
+        self.setWindowIcon(QIcon(f'{ICONPATH}icon.png'))
         self.setFixedSize(350, 220)
         self.setAttribute(Qt.WA_TranslucentBackground)
 
         # Setup TrayIcon
         self.trayIcon = QSystemTrayIcon()
-        self.trayIcon.setIcon(QIcon('{PATH}/icons/icon.png'))
+        self.trayIcon.setIcon(QIcon(f'{ICONPATH}icon.png'))
         self.trayIcon.setToolTip('Bing Wallpaper')
         self.trayIcon.setVisible(True)
 
@@ -43,7 +45,7 @@ class Window(QMainWindow):
         self.iconLabel = QLabel(self)
         self.iconLabel.setFixedSize(self.icon_width, self.icon_height)
         icon = QImage()
-        icon.load(f'{PATH}/icons/icon.png')
+        icon.load(f'{ICONPATH}icon.png')
         self.iconLabel.setPixmap(QPixmap.fromImage(icon).scaled(self.icon_width, self.icon_height, Qt.KeepAspectRatioByExpanding))
         self.iconLabel.show()
 
@@ -132,11 +134,11 @@ class Window(QMainWindow):
         palette = self.palette()
         bgcolor = palette.color(self.backgroundRole())
         if bgcolor.name() > "#656565":
-            self.refreshButton.setIcon(QIcon('icons/refresh_light.png'))
-            self.closeButton.setIcon(QIcon('icons/close_light.png'))
+            self.refreshButton.setIcon(QIcon(f'{ICONPATH}refresh_light.png'))
+            self.closeButton.setIcon(QIcon(f'{ICONPATH}close_light.png'))
         else:
-            self.refreshButton.setIcon(QIcon('icons/refresh_dark.png'))
-            self.closeButton.setIcon(QIcon('icons/close_dark.png'))
+            self.refreshButton.setIcon(QIcon(f'{ICONPATH}refresh_dark.png'))
+            self.closeButton.setIcon(QIcon(f'{ICONPATH}close_dark.png'))
 
     def paintEvent(self, event):
         # Initialize QPainter
@@ -179,10 +181,10 @@ class Window(QMainWindow):
             if reply:
                 image = self.collection.images[index]
                 filename = f'{image.index}-{image.startdate}-{image.enddate}.jpg'
-                reply = setWallpaper(filename)
+                reply = set_wallpaper(filename)
                 print(reply)
                 img = QImage()
-                img.load(f'{PATH}/images/{filename}')
+                img.load(f'{PATH}/{filename}')
                 self.image_label.setPixmap(QPixmap.fromImage(img).scaled(self.image_width, self.image_height, Qt.KeepAspectRatioByExpanding))
                 self.image_label.show()
                 self.title.setText(self.collection.images[index].title.upper())
