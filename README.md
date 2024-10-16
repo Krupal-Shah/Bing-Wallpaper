@@ -8,7 +8,7 @@
 
 
 ## About
-This is a MOD of the Bing wallpaper created for Windows by Microsoft. It is made using QT for Python. It has similar functionalities, such as updating wallpaper everyday, opening a window to display information about the picture and the ability to change the picture to next or previous picture of the day. 
+This is a MOD of the Bing wallpaper created for Windows by Microsoft. It is made using QT for Python. It has similar functionalities, such as updating wallpaper everyday, opening a window to display information about the picture and the ability to change the picture to next or previous picture of the day.
 
 ## Installation
 1. Download the latest release package and unpack it.
@@ -58,6 +58,9 @@ If you have a suggestion that would make this better, please fork the repo and c
 3. Commit your Changes (git commit -m 'Add some AmazingFeature')
 4. Push to the Branch (git push origin feature/AmazingFeature)
 5. Open a Pull Request
+
+## TODO
+Need to test with other Linux systems and Ubuntu version. Currently it has only been tested with Ubuntu 22.04 and works perfectly fine.
 
 ## Licence
 Distributed under the MIT License. See `LICENSE.txt` for more information.
