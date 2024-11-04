@@ -4,8 +4,15 @@
         "icons/close_dark.png",
         "icons/close_light.png",
         "icons/icon.png",
+        "icons/icon_big.png",
         "icons/refresh_dark.png",
         "icons/refresh_light.png",
+        "icons/collection_dark.png",
+        "icons/collection_light.png",
+        "icons/favorite_dark.png",
+        "icons/favorite_light.png",
+        "icons/favorite_dark-fill.png",
+        "icons/favorite_light-fill.png",
         "bingwallpaper.py",
         "window.py"
     ]

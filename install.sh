@@ -22,7 +22,7 @@ copy_files() {
     # copy icons, binaries, and desktop file
     sudo cp -r "$DIR"/icons/ "$DES"/share/bingwallpaper/ &&
     sudo cp "$DIR"/usr/bin/bingwallpaper.bin "$DES"/bin/bingwallpaper &&
-    sudo cp "$DIR"/usr/share/applications/bing_wallpaper_1.0.desktop "$DES"/share/applications/bingwallpaper.desktop
+    sudo cp "$DIR"/usr/share/applications/bing_wallpaper.desktop "$DES"/share/applications/bingwallpaper.desktop
     # make the binary executable
     sudo chmod +x "$DES"/bin/bingwallpaper
     echo -e "Installed Successfully. Execute 'bingwallpaper' to Run."
@@ -34,7 +34,7 @@ add_startup() {
     mkdir -p "$HOME/.config/autostart"
     
     # Copy the .desktop file to autostart directory
-    cp "$DIR/usr/share/applications/bing_wallpaper_1.0.desktop" "$HOME/.config/autostart/bingwallpaper.desktop"
+    cp "$DIR/usr/share/applications/bing_wallpaper.desktop" "$HOME/.config/autostart/bingwallpaper.desktop"
     chmod +x ~/.config/autostart/bingwallpaper.desktop
     
     echo "Added to startup successfully!"

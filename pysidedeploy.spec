@@ -3,18 +3,18 @@ title = Bing Wallpaper for Linux
 project_dir = .
 input_file = bingwallpaper.py
 project_file = bingwallpaper.pyproject
-exec_directory = releases/bing_wallpaper_1.0/usr/bin
-icon = /home/krupal/Documents/bingwallpaper/Bing-Wallpaper/icons/icon.png
+exec_directory = releases/bing_wallpaper_2.0/usr/bin
+icon = /home/krupal/Documents/Bing-Wallpaper/icons/icon_big.png
 
 [python]
-python_path = /home/krupal/Documents/bingwallpaper/Bing-Wallpaper/venv/bin/python3
+python_path = /home/krupal/Documents/Bing-Wallpaper/venv/bin/python3
 packages = Nuitka==2.3.2
 android_packages = 
 
 [qt]
 qml_files = 
 excluded_qml_plugins = 
-modules = Gui,Core,Widgets,DBus
+modules = Core,Gui,Widgets,DBus
 plugins = styles,platforms/darwin,iconengines,egldeviceintegrations,accessiblebridge,imageformats,platformthemes,platforminputcontexts,generic,xcbglintegrations,platforms
 
 [android]

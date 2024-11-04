@@ -8,7 +8,9 @@ if __name__ == "__main__":
     app = QApplication([])
 
     if not QSystemTrayIcon.isSystemTrayAvailable():
-        QMessageBox.critical(None, "Systray", "I couldn't detect any system tray on this system.")
+        QMessageBox.critical(
+            None, "Systray", "I couldn't detect any system tray on this system."
+        )
         sys.exit(1)
 
     QApplication.setQuitOnLastWindowClosed(False)
