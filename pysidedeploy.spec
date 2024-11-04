@@ -4,10 +4,10 @@ project_dir = .
 input_file = bingwallpaper.py
 project_file = bingwallpaper.pyproject
 exec_directory = releases/bing_wallpaper_2.0/usr/bin
-icon = /home/krupal/Documents/Bing-Wallpaper/icons/icon_big.png
+icon = {PATH}/Bing-Wallpaper/icons/icon_big.png
 
 [python]
-python_path = /home/krupal/Documents/Bing-Wallpaper/venv/bin/python3
+python_path = {PATH}/Bing-Wallpaper/venv/bin/python3
 packages = Nuitka==2.3.2
 android_packages = 
 

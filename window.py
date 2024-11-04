@@ -6,9 +6,8 @@ from PySide6.QtCore import *
 # Assume BingImage and BingCollection classes are in the extract module
 from extract import BingCollection, BingImage, set_wallpaper, FavoriteCollection
 
-# ICONPATH = "//usr/share/bingwallpaper/icons/"
+ICONPATH = "//usr/share/bingwallpaper/icons/"
 PATH = os.path.join(os.getenv("HOME"), ".cache", "bingwallpaper")
-ICONPATH = "/home/krupal/Documents/Bing-Wallpaper/icons/"
 
 class Window(QMainWindow):
     def __init__(self, parent=None):
