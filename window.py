@@ -9,6 +9,7 @@ from extract import BingCollection, BingImage, set_wallpaper, FavoriteCollection
 ICONPATH = "//usr/share/bingwallpaper/icons/"
 PATH = os.path.join(os.getenv("HOME"), ".cache", "bingwallpaper")
 
+
 class Window(QMainWindow):
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -153,9 +154,12 @@ class Window(QMainWindow):
 
         self.favorites = FavoriteCollection()
 
-
         self.timer = QTimer(self)
-        self.timer.timeout.connect(self.load_next_image if self.collectionButtonState else self.refreshApplication)
+        self.timer.timeout.connect(
+            self.load_next_image
+            if self.collectionButtonState
+            else self.refreshApplication
+        )
         self.timer.start(43200000)
 
     def setButtonIcons(self):
@@ -258,7 +262,7 @@ class Window(QMainWindow):
                     self.description.setText(self.collection.images[index].description)
                 else:
                     print("Error downloading the image")
-        
+
         self.setFavoriteIcon()
         return
 
@@ -313,15 +317,21 @@ class Window(QMainWindow):
             self.curr_picture = 0
         self.load_image()
         self.checkButton()
-            
+
     def setFavoriteIcon(self):
-        if self.current_image and hasattr(self.current_image, 'favorite'):
+        if self.current_image and hasattr(self.current_image, "favorite"):
             icon_path = f"{ICONPATH}favorite_"
             if self.current_image.favorite:
-                icon_path += "light-fill.png" if self.bgcolor.name() > "#656565" else "dark-fill.png"
+                icon_path += (
+                    "light-fill.png"
+                    if self.bgcolor.name() > "#656565"
+                    else "dark-fill.png"
+                )
             else:
-                icon_path += "light.png" if self.bgcolor.name() > "#656565" else "dark.png"
-            
+                icon_path += (
+                    "light.png" if self.bgcolor.name() > "#656565" else "dark.png"
+                )
+
             self.favorite.setIcon(QIcon(icon_path))
 
     def toggleFavorite(self):
@@ -331,9 +341,8 @@ class Window(QMainWindow):
                 self.favorites.add_favorite(self.current_image)
             else:
                 self.favorites.remove_favorite(self.current_image)
-        
-        self.setFavoriteIcon()
 
+        self.setFavoriteIcon()
 
     def load_next_image(self):
         self.curr_picture = (self.curr_picture + 1) % self.favorites.count()
